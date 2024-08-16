@@ -1,3 +1,4 @@
+import 'package:coffe_app/pages/caffein_tracking_screen.dart';
 import 'package:coffe_app/pages/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -181,12 +182,21 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  void _handleGoogleSignIn() {
-    try {
-      GoogleAuthProvider _googleAuthProvider = GoogleAuthProvider();
-      _auth.signInWithProvider(_googleAuthProvider);
-    } catch (error) {
-      print(error);
+void _handleGoogleSignIn() async {
+  try {
+    GoogleAuthProvider _googleAuthProvider = GoogleAuthProvider();
+    UserCredential userCredential = await _auth.signInWithProvider(_googleAuthProvider);
+
+    if (userCredential.user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => CaffeineTrackingScreen(user: userCredential.user!)),
+      );
     }
+  } catch (error) {
+    print(error);
   }
+}
+
+
 }
