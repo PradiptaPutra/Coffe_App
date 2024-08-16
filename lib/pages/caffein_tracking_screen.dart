@@ -1,6 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CaffeineTrackingScreen extends StatefulWidget {
   final User user;
@@ -11,10 +12,9 @@ class CaffeineTrackingScreen extends StatefulWidget {
   _CaffeineTrackingScreenState createState() => _CaffeineTrackingScreenState();
 }
 
-
 class _CaffeineTrackingScreenState extends State<CaffeineTrackingScreen> {
   double _dailyCaffeine = 0;
-  final double _dailyLimit = 400; // 400mg is a common recommended limit
+  final double _dailyLimit = 400;
 
   void _addCaffeine(double amount) {
     setState(() {
@@ -25,28 +25,31 @@ class _CaffeineTrackingScreenState extends State<CaffeineTrackingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.brown[700],
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text('Prevent caffeine overdose, track it easily!',
-            style: TextStyle(color: Colors.white, fontSize: 18)),
-        backgroundColor: Colors.brown[800],
+        title: Text('Caffeine Tracker',
+            style: TextStyle(color: Colors.black87, fontSize: 20, fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.black87),
       ),
-      body: Column(
-        children: [
-          _buildUserProfile(),
-          _buildCupProgressIndicator(),
-          _buildSearchBar(),
-          Expanded(
-            child: _buildDrinksList(),
-          ),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildUserProfile(),
+            _buildCupProgressIndicator(),
+            _buildSearchBar(),
+            _buildDrinksList(),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildUserProfile() {
-    return Padding(
+    return Container(
       padding: const EdgeInsets.all(16.0),
+      color: Colors.white,
       child: Row(
         children: [
           CircleAvatar(
@@ -59,11 +62,11 @@ class _CaffeineTrackingScreenState extends State<CaffeineTrackingScreen> {
             children: [
               Text(
                 widget.user.displayName ?? 'No Name',
-                style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, color: Colors.black87, fontWeight: FontWeight.bold),
               ),
               Text(
                 widget.user.email ?? 'No Email',
-                style: TextStyle(fontSize: 14, color: Colors.white70),
+                style: TextStyle(fontSize: 14, color: Colors.black54),
               ),
             ],
           ),
@@ -75,40 +78,59 @@ class _CaffeineTrackingScreenState extends State<CaffeineTrackingScreen> {
   Widget _buildCupProgressIndicator() {
     double progress = _dailyCaffeine / _dailyLimit;
     return Container(
-      height: 200,
+      height: 250,
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.white60.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
       child: Stack(
         alignment: Alignment.center,
         children: [
           Container(
-            width: 150,
-            height: 150,
+            width: 200,
+            height: 200,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.brown[400]!, Colors.brown[700]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.blue[100]!, Colors.blue[300]!],
               ),
             ),
           ),
           ClipPath(
             clipper: CupClipper(progress),
             child: Container(
-              width: 150,
-              height: 150,
+              width: 200,
+              height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [Colors.orange[300]!, Colors.orange[600]!],
                 ),
               ),
             ),
           ),
-          Text(
-            '${(progress * 100).toInt()}%',
-            style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${(progress * 100).toInt()}%',
+                style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              Text(
+                '${_dailyCaffeine.toInt()} / ${_dailyLimit.toInt()} mg',
+                style: TextStyle(fontSize: 16, color: Colors.white70),
+              ),
+            ],
           ),
         ],
       ),
@@ -121,16 +143,24 @@ class _CaffeineTrackingScreenState extends State<CaffeineTrackingScreen> {
       child: TextField(
         decoration: InputDecoration(
           filled: true,
-          fillColor: Colors.brown[600],
+          fillColor: Colors.white,
           hintText: 'Search drinks...',
-          hintStyle: TextStyle(color: Colors.brown[200]),
-          prefixIcon: Icon(Icons.search, color: Colors.brown[200]),
+          hintStyle: TextStyle(color: Colors.grey[400]),
+          prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide.none,
           ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(color: Colors.blue[300]!, width: 2),
+          ),
         ),
-        style: TextStyle(color: Colors.white),
+        style: TextStyle(color: Colors.black87),
       ),
     );
   }
@@ -148,15 +178,27 @@ class _CaffeineTrackingScreenState extends State<CaffeineTrackingScreen> {
     ];
 
     return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
       itemCount: drinks.length,
       itemBuilder: (context, index) {
         final (name, caffeine, icon) = drinks[index];
-        return ListTile(
-          leading: Icon(icon, color: Colors.orange),
-          title: Text(name, style: TextStyle(color: Colors.white)),
-          subtitle: Text('$caffeine mg', style: TextStyle(color: Colors.orange[200])),
-          trailing: Icon(Icons.add_circle_outline, color: Colors.orange),
-          onTap: () => _addCaffeine(caffeine),
+        return Card(
+          elevation: 2,
+          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.orange[100],
+              child: Icon(icon, color: Colors.orange[700], size: 20),
+            ),
+            title: Text(name, style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)),
+            subtitle: Text('$caffeine mg', style: TextStyle(color: Colors.grey[600])),
+            trailing: IconButton(
+              icon: Icon(Icons.add_circle_outline, color: Colors.blue[400]),
+              onPressed: () => _addCaffeine(caffeine),
+            ),
+          ),
         );
       },
     );
@@ -186,4 +228,3 @@ class CupClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(CupClipper oldClipper) => fillPercentage != oldClipper.fillPercentage;
 }
-
